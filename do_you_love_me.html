@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Do you love me?</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Great+Vibes&family=Poppins:wght@300;400;600&display=swap');
+
+  :root{
+    --pink: #ff6b9d;
+    --pink-deep: #ff1e6b;
+    --pink-glow: rgba(255, 60, 130, 0.85);
+    --bg: #050005;
+    --gold: #ffd479;
+  }
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body{
+    margin:0; padding:0; width:100%; height:100%;
+    background: radial-gradient(ellipse at 50% 30%, #12030c 0%, #050005 60%, #020002 100%);
+    overflow: hidden;
+    font-family: "Poppins", sans-serif;
+    touch-action: none;
+  }
+  #stage{
+    position:fixed; inset:0;
+    width:100vw; height:100dvh;
+  }
+  canvas#heart{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    display:block;
+  }
+
+  .center-text{
+    position:absolute;
+    left:50%; top:33%;
+    transform: translate(-50%,-50%);
+    text-align:center;
+    pointer-events:none;
+    width: 88%;
+    max-width: 560px;
+    z-index: 3;
+  }
+  #question{
+    font-family: "Dancing Script", cursive;
+    font-weight: 700;
+    font-size: clamp(20px, 7vw, 36px);
+    line-height: 1.15;
+    color: #4a90e2;
+    text-shadow:
+      0 1px 0 #b3d9ff,
+      0 2px 4px rgba(74,144,226,0.5),
+      0 0 16px rgba(100,180,255,0.7),
+      0 0 34px rgba(74,144,226,0.6);
+    animation: floatQ 3.4s ease-in-out infinite;
+  }
+  @keyframes floatQ{
+    0%,100%{ transform: translateY(0); }
+    50%{ transform: translateY(-6px); }
+  }
+
+  #response{
+    position:absolute;
+    left:50%; top:33%;
+    transform: translate(-50%,-50%) scale(0.4);
+    text-align:center;
+    pointer-events:none;
+    opacity:0;
+    width: 92%;
+    max-width: 620px;
+    z-index: 3;
+  }
+  #response.show-love{ animation: popLove 900ms cubic-bezier(.2,1.4,.4,1) forwards; }
+  #response.show-thanks{ animation: popThanks 1000ms cubic-bezier(.2,1.4,.4,1) forwards; }
+  @keyframes popLove{
+    0%{ opacity:0; transform: translate(-50%,-50%) scale(0.3) rotate(-6deg); }
+    60%{ opacity:1; transform: translate(-50%,-50%) scale(1.12) rotate(2deg); }
+    100%{ opacity:1; transform: translate(-50%,-50%) scale(1) rotate(0deg); }
+  }
+  @keyframes popThanks{
+    0%{ opacity:0; transform: translate(-50%,-50%) scale(0.5) translateY(16px); }
+    100%{ opacity:1; transform: translate(-50%,-50%) scale(1) translateY(0); }
+  }
+  .love-line{
+    font-family: "Dancing Script", cursive;
+    font-weight: 700;
+    font-size: clamp(22px, 7vw, 40px);
+    color: #64b5f6;
+    text-shadow:
+      0 1px 0 #e3f2fd,
+      0 3px 6px rgba(74,144,226,0.6),
+      0 0 18px rgba(100,180,255,0.95),
+      0 0 40px rgba(74,144,226,0.7);
+    margin: 0;
+  }
+  .thanks-line{
+    font-family: "Dancing Script", cursive;
+    font-weight: 700;
+    font-size: clamp(24px, 7.5vw, 44px);
+    background: linear-gradient(180deg, #fff5da 0%, #ffd479 45%, #e8a63a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 22px rgba(255,212,121,0.6);
+    filter: drop-shadow(0 3px 3px rgba(120,60,0,0.5));
+    display: inline-block;
+  }
+  .maya-line{
+    font-family: "Dancing Script", cursive;
+    font-weight: 700;
+    font-size: clamp(26px, 8vw, 48px);
+    color: #64b5f6;
+    text-shadow:
+      0 1px 0 #e3f2fd,
+      0 3px 6px rgba(74,144,226,0.6),
+      0 0 18px rgba(100,180,255,0.95),
+      0 0 40px rgba(74,144,226,0.7);
+    margin-top: 12px;
+    display: inline-block;
+  }
+
+  #buttons{
+    position:absolute;
+    left:0; right:0;
+    bottom: 14%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap: 8vw;
+    z-index: 6;
+  }
+  #buttons.hidden{ display:none; }
+
+  .btn3d{
+    position: relative;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    font-family: "Dancing Script", cursive;
+    font-weight: 700;
+    font-size: clamp(13px, 3.8vw, 18px);
+    color: #fff;
+    padding: 8px 5vw;
+    min-width: 22vw;
+    max-width: 140px;
+    border-radius: 50px;
+    transform-style: preserve-3d;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+    user-select: none;
+    letter-spacing: 0.5px;
+  }
+  #yesBtn{
+    background: linear-gradient(180deg, #ff9dc2 0%, #ff3d78 45%, #d10047 100%);
+    box-shadow:
+      0 8px 0 #96002f,
+      0 13px 18px rgba(255,46,99,0.5),
+      inset 0 2px 3px rgba(255,255,255,0.6),
+      inset 0 -6px 8px rgba(120,0,40,0.4);
+    text-shadow: 0 2px 3px rgba(120,0,30,0.6), 0 0 10px rgba(255,255,255,0.5);
+  }
+  #yesBtn:active{
+    transform: translateY(6px);
+    box-shadow:
+      0 2px 0 #96002f,
+      0 5px 8px rgba(255,46,99,0.45),
+      inset 0 2px 3px rgba(255,255,255,0.6);
+  }
+
+  #noBtn{
+    position: fixed;
+    background: linear-gradient(180deg, #4a4a52 0%, #232228 55%, #0e0d10 100%);
+    box-shadow:
+      0 8px 0 #050505,
+      0 13px 18px rgba(0,0,0,0.6),
+      inset 0 2px 3px rgba(255,255,255,0.2),
+      inset 0 -6px 10px rgba(0,0,0,0.5),
+      0 0 18px rgba(255,60,130,0.25);
+    text-shadow: 0 2px 3px rgba(0,0,0,0.7), 0 0 8px rgba(255,120,170,0.4);
+    transition: left 220ms cubic-bezier(.2,.8,.2,1), top 220ms cubic-bezier(.2,.8,.2,1), transform 120ms ease;
+    z-index: 20;
+  }
+  #noBtn:active{ transform: translateY(4px); }
+  #noBtn.shake{ animation: shakeNo 320ms ease; }
+  @keyframes shakeNo{
+    0%,100%{ transform: rotate(0deg); }
+    20%{ transform: rotate(-6deg); }
+    40%{ transform: rotate(5deg); }
+    60%{ transform: rotate(-4deg); }
+    80%{ transform: rotate(3deg); }
+  }
+
+  #shy{
+    position:absolute;
+    left:50%; bottom:5%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+    font-style: italic;
+    letter-spacing: 0.3px;
+    opacity: 0;
+    transition: opacity 300ms ease;
+    pointer-events:none;
+    width: 90%;
+    text-align: center;
+    z-index: 6;
+  }
+  #shy.on{ opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <canvas id="heart"></canvas>
+
+  <div class="center-text">
+    <div id="question">Do you<br>love me?</div>
+    <div id="response"></div>
+  </div>
+
+  <div id="buttons">
+    <button class="btn3d" id="yesBtn">Yes</button>
+    <button class="btn3d" id="noBtn">NO</button>
+  </div>
+
+  <div id="shy">she keeps dodging... maybe that's your answer 😏</div>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('heart');
+  const ctx = canvas.getContext('2d');
+  let W, H, DPR;
+
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const state = { mode: 'idle', t0: performance.now() };
+
+  // ---------- mathematical heart curve ----------
+  function heartPoint(t){
+    const x = 16 * Math.pow(Math.sin(t), 3);
+    const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+    return { x, y: -y };
+  }
+
+  // ---------- particle system ----------
+  // Denser field + a mix of tiny sparkle dots and a few little heart glyphs,
+  // similar to the reference: glittery outline made of many small points.
+  const isSmall = Math.min(window.innerWidth, window.innerHeight) < 500;
+  const PARTICLE_COUNT = isSmall ? 1400 : 2000;
+  const MINI_HEART_COUNT = isSmall ? 10 : 16;
+  const particles = [];
+  const miniHearts = [];
+
+  // heart shape fits well inside phone screens: scale relative to the
+  // smaller of width/height, and keep it in the upper-middle area.
+  function heartScale(){
+    return Math.min(W, H * 0.62) * 0.021;
+  }
+
+  function heartCenterY(){
+    return H * 0.30;
+  }
+
+  function spawnParticles(){
+    particles.length = 0;
+    for (let i = 0; i < PARTICLE_COUNT; i++){
+      const t = Math.random() * Math.PI * 2;
+      // spread particles in a soft band around the curve for a glitter-trail look
+      const jitter = 0.86 + Math.pow(Math.random(), 2) * 0.32;
+      const along = (Math.random() - 0.5) * 0.05; // slight tangential drift
+      particles.push({
+        t: t + along,
+        jitter,
+        x: (Math.random() - 0.5) * W,
+        y: (Math.random() - 0.5) * H,
+        vx: 0, vy: 0,
+        size: 0.6 + Math.random() * 1.8,
+        twinkleSeed: Math.random() * 1000,
+        twinkleSpeed: 0.002 + Math.random() * 0.004,
+        delay: Math.random() * 700
+      });
+    }
+    miniHearts.length = 0;
+    for (let i = 0; i < MINI_HEART_COUNT; i++){
+      const t = Math.random() * Math.PI * 2;
+      const jitter = 0.8 + Math.random() * 0.5;
+      miniHearts.push({
+        t, jitter,
+        size: 6 + Math.random() * 8,
+        x: (Math.random() - 0.5) * W,
+        y: (Math.random() - 0.5) * H,
+        vx: 0, vy: 0,
+        rot: (Math.random() - 0.5) * 0.6,
+        delay: 200 + Math.random() * 900,
+        twinkleSeed: Math.random() * 1000
+      });
+    }
+  }
+  spawnParticles();
+  window.addEventListener('resize', spawnParticles);
+
+  function targetFor(p, time, mode){
+    const s = heartScale() * (mode === 'yes' ? 1.1 : 1);
+    const pulse = 1 + Math.sin(time * 0.0026) * (mode === 'yes' ? 0.05 : 0.025);
+    const wobble = mode === 'yes' ? Math.sin(time * 0.004 + p.t * 3) * 3 : 0;
+    const base = heartPoint(p.t);
+    const r = p.jitter * pulse;
+    return {
+      x: base.x * s * r + wobble,
+      y: base.y * s * r + heartCenterY() - H/2
+    };
+  }
+
+  function drawMiniHeart(cx, cy, size, rot, alpha){
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot);
+    ctx.scale(size / 16, size / 16);
+    ctx.beginPath();
+    ctx.moveTo(0, 4);
+    ctx.bezierCurveTo(0, 2, -2, -2, -6, -2);
+    ctx.bezierCurveTo(-11, -2, -11, 4, -11, 4);
+    ctx.bezierCurveTo(-11, 8, -7, 12, 0, 16);
+    ctx.bezierCurveTo(7, 12, 11, 8, 11, 4);
+    ctx.bezierCurveTo(11, 4, 11, -2, 6, -2);
+    ctx.bezierCurveTo(2, -2, 0, 2, 0, 4);
+    ctx.closePath();
+    ctx.fillStyle = `rgba(255, 90, 150, ${alpha})`;
+    ctx.shadowColor = 'rgba(255,110,170,0.9)';
+    ctx.shadowBlur = 8;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawParticles(time){
+    ctx.clearRect(0, 0, W, H);
+    ctx.save();
+    ctx.translate(W / 2, H / 2);
+
+    // glow field particles
+    for (let i = 0; i < particles.length; i++){
+      const p = particles[i];
+      if (time < p.delay) continue;
+
+      const target = targetFor(p, time, state.mode);
+      const dx = target.x - p.x;
+      const dy = target.y - p.y;
+      p.vx += dx * 0.013;
+      p.vy += dy * 0.013;
+      p.vx *= 0.80;
+      p.vy *= 0.80;
+      p.x += p.vx;
+      p.y += p.vy;
+
+      const twinkle = 0.5 + 0.5 * Math.sin(time * p.twinkleSpeed + p.twinkleSeed);
+      const alpha = 0.35 + twinkle * 0.55;
+      const warmth = twinkle > 0.75; // occasional bright white-hot sparkle
+
+      ctx.beginPath();
+      if (warmth){
+        ctx.fillStyle = `rgba(255, 200, 220, ${alpha})`;
+        ctx.shadowColor = 'rgba(255,200,220,0.95)';
+        ctx.shadowBlur = 9;
+      } else {
+        ctx.fillStyle = `rgba(220, 20, 80, ${alpha})`;
+        ctx.shadowColor = 'rgba(220,30,100,0.85)';
+        ctx.shadowBlur = 7;
+      }
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // scattered mini heart glyphs along the outline
+    for (let i = 0; i < miniHearts.length; i++){
+      const mh = miniHearts[i];
+      if (time < mh.delay) continue;
+      const target = targetFor(mh, time, state.mode);
+      const dx = target.x - mh.x;
+      const dy = target.y - mh.y;
+      mh.vx += dx * 0.01;
+      mh.vy += dy * 0.01;
+      mh.vx *= 0.82;
+      mh.vy *= 0.82;
+      mh.x += mh.vx;
+      mh.y += mh.vy;
+
+      const twinkle = 0.6 + 0.4 * Math.sin(time * 0.0018 + mh.twinkleSeed);
+      drawMiniHeart(mh.x, mh.y, mh.size, mh.rot, twinkle);
+    }
+
+    ctx.restore();
+  }
+
+  function loop(now){
+    const time = now - state.t0;
+    drawParticles(time);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // ---------- Runaway "No" button ----------
+  const noBtn = document.getElementById('noBtn');
+  const yesBtn = document.getElementById('yesBtn');
+  const buttonsWrap = document.getElementById('buttons');
+  const shy = document.getElementById('shy');
+  const question = document.getElementById('question');
+  const response = document.getElementById('response');
+
+  let dodgeCount = 0;
+
+  function placeNoButtonInitially(){
+    noBtn.style.position = 'relative';
+    noBtn.style.left = 'auto';
+    noBtn.style.top = 'auto';
+  }
+  placeNoButtonInitially();
+
+  function escapeNoButton(clientX, clientY){
+    noBtn.style.position = 'fixed';
+    const rect = noBtn.getBoundingClientRect();
+    const w = rect.width, h = rect.height;
+    const margin = 14;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    let x, y, tries = 0;
+    do {
+      x = margin + Math.random() * (vw - w - margin * 2);
+      y = margin + Math.random() * (vh - h - margin * 2);
+      tries++;
+    } while (
+      clientX != null &&
+      Math.hypot((x + w/2) - clientX, (y + h/2) - clientY) < 150 &&
+      tries < 12
+    );
+
+    noBtn.style.left = x + 'px';
+    noBtn.style.top = y + 'px';
+    noBtn.classList.remove('shake');
+    void noBtn.offsetWidth;
+    noBtn.classList.add('shake');
+
+    dodgeCount++;
+    if (dodgeCount >= 3) shy.classList.add('on');
+  }
+
+  function pointerNear(clientX, clientY){
+    const rect = noBtn.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    return Math.hypot(cx - clientX, cy - clientY) < 130;
+  }
+
+  window.addEventListener('mousemove', (e) => {
+    if (state.mode !== 'idle') return;
+    if (pointerNear(e.clientX, e.clientY)) escapeNoButton(e.clientX, e.clientY);
+  });
+
+  window.addEventListener('touchmove', (e) => {
+    if (state.mode !== 'idle') return;
+    const t = e.touches[0];
+    if (t && pointerNear(t.clientX, t.clientY)) escapeNoButton(t.clientX, t.clientY);
+  }, { passive: true });
+
+  noBtn.addEventListener('mouseenter', (e) => {
+    if (state.mode !== 'idle') return;
+    escapeNoButton(e.clientX, e.clientY);
+  });
+
+  noBtn.addEventListener('touchstart', (e) => {
+    if (state.mode !== 'idle') return;
+    e.preventDefault();
+    const t = e.touches[0];
+    escapeNoButton(t.clientX, t.clientY);
+  }, { passive: false });
+
+  noBtn.addEventListener('click', (e) => {
+    if (state.mode !== 'idle') return;
+    escapeNoButton(e.clientX, e.clientY);
+  });
+
+  // ---------- Yes flow ----------
+  function goYes(){
+    state.mode = 'yes';
+    buttonsWrap.classList.add('hidden');
+    shy.classList.remove('on');
+    question.style.transition = 'opacity 500ms ease';
+    question.style.opacity = '0';
+
+    response.innerHTML = '<div class="love-line">Love you too 💗</div>';
+    response.className = 'show-love';
+
+    setTimeout(() => {
+      response.style.transition = 'opacity 500ms ease, transform 500ms ease';
+      response.style.opacity = '0';
+      response.style.transform = 'translate(-50%,-50%) scale(0.85)';
+
+      setTimeout(() => {
+        response.style.transition = '';
+        response.innerHTML = '<div style="text-align: center;"><div class="thanks-line">Thank you 🌸</div></div>';
+        response.className = 'show-thanks';
+        response.style.opacity = '';
+        response.style.transform = '';
+
+        // Replace Thank you with Maya after 2 seconds
+        setTimeout(() => {
+          response.style.transition = 'opacity 500ms ease';
+          response.style.opacity = '0';
+          
+          setTimeout(() => {
+            response.innerHTML = '<div class="maya-line"> 💕~ Maya ~💕</div>';
+            response.style.transition = '';
+            response.className = 'show-thanks';
+            response.style.opacity = '';
+          }, 500);
+        }, 2000);
+      }, 520);
+    }, 1800);
+  }
+
+  yesBtn.addEventListener('click', goYes);
+})();
+</script>
+</body>
+</html>
